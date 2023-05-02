@@ -12,7 +12,7 @@ namespace StoreWebAPI.Controllers
 
         public BrandsController(IProductBrandsRepository brandsRepository)
         {
-            _brandsRepository= brandsRepository;
+            _brandsRepository = brandsRepository;
         }
 
         /// <summary>
@@ -32,25 +32,24 @@ namespace StoreWebAPI.Controllers
         {
             if (id == null)
                 return BadRequest();
-            var brand= await _brandsRepository.GetById(id);
+            var brand = await _brandsRepository.GetById(id);
             if (brand == null)
                 return NotFound();
             return Ok(await _brandsRepository.GetById(id));
         }
 
         [HttpPost("AddBrand")]
-        public async Task<IActionResult> CreateAsync( BrandDto dto)
+        public async Task<IActionResult> CreateAsync(BrandDto dto)
         {
-            var existingBrand=await _brandsRepository.GetById(dto.Id);
+            var existingBrand = await _brandsRepository.GetById(dto.Id);
             if (existingBrand != null)
-            {
                 return BadRequest("Brand with the specified Id already exists.");
-            }
+
 
             var brand = new ProductBrand()
             {
-                Id=dto.Id,
-                Name=dto.Name,
+                Id = dto.Id,
+                Name = dto.Name,
             };
 
             await _brandsRepository.Add(brand);
@@ -58,20 +57,32 @@ namespace StoreWebAPI.Controllers
         }
 
         [HttpPut("UpdateBrand")]
-        public async Task<IActionResult> UpdateAsync(BrandDto dto)
+        public async Task<IActionResult> UpdateAsync([FromBody]BrandDto dto)
         {
             var existingBrand = await _brandsRepository.GetById(dto.Id);
             if (existingBrand == null)
-            {
                 return BadRequest($"No brand was found with ID :{dto.Id}");
-            }
 
             existingBrand.Name = dto.Name;
-            existingBrand.Id= dto.Id;
+            existingBrand.Id = dto.Id;
 
             await _brandsRepository.Update(existingBrand);
             return Ok(dto);
         }
+
+        [HttpDelete("{id}")]
+
+        public async Task<IActionResult> DeleteAsync(int id)
+        {
+            var brand = await _brandsRepository.GetById(id);
+            if (brand == null)
+                return NotFound($"No brand was found with ID :{id}");
+            
+            await _brandsRepository.Delete(brand);
+            return Ok($"Brand with ID {brand.Id}, Name \"{brand.Name}\" has been deleted ");
+        }
+
     }
-    
+
+
 }

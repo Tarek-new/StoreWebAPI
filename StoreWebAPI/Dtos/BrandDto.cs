@@ -1,8 +1,6 @@
 ﻿namespace StoreWebAPI.Dtos
 {
-    public class BrandDto
+    public class BrandDto: BaseDto
     {
-        public int Id { get; set; }
-        public string Name { get; set; } = null!;
     }
 }

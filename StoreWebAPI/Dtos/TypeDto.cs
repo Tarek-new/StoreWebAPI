@@ -1,6 +1,6 @@
 ﻿namespace StoreWebAPI.Dtos
 {
-    public class TypeDto
+    public class TypeDto: BaseDto
     {
     }
 }

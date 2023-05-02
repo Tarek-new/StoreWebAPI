@@ -20,7 +20,11 @@ namespace  Infrastructure.Repositories
         }
 
         public async Task Delete(T record)
-           => _context.Set<T>().Remove(record);
+        {
+            _context.Set<T>().Remove(record);
+            _context.SaveChanges();
+        }
+         
         
 
         public async Task<IList<T>> GetAll()
