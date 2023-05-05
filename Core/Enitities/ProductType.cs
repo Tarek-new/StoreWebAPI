@@ -3,12 +3,11 @@ using System.Text.Json.Serialization;
 
 namespace Core.Enitities
 {
-    public class ProductType
+    public class ProductType:BaseEntity
     {
+
         [DatabaseGenerated(DatabaseGeneratedOption.None)]
         public int Id { get; set; }
-        public string Name { get; set; } = null!;
-        
 
     }
 }

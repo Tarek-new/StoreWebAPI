@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.OpenApi.Models;
 using Microsoft.Extensions.Options;
 using System.Reflection;
+using StoreWebAPI.Helpers;
 
 namespace StoreWebAPI
 
@@ -36,10 +37,11 @@ namespace StoreWebAPI
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-
+            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
             builder.Services.AddScoped<IProductRepository, ProductRepository>();
             builder.Services.AddScoped<IProductBrandsRepository, ProductBrandsRepository>();
             builder.Services.AddScoped<IProductTypesRepository, ProductTypesRepository>();
+            builder.Services.AddAutoMapper(typeof(MappingProfiles));
 
 
             var app = builder.Build();

@@ -1,10 +1,14 @@
-﻿using Core.Interfaces;
+﻿using Core.Enitities;
+using Core.Interfaces;
+using Core.Specifications;
 using Infrastructure.Contexts;
+using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
+using System.Linq.Expressions;
 
 namespace  Infrastructure.Repositories
 {
-    public class GenericRepository<T> : IGenericRepository<T> where T : class
+    public class GenericRepository<T> : IGenericRepository<T> where T : BaseEntity
     {
         protected readonly StoreDbContext _context;
 
@@ -15,19 +19,17 @@ namespace  Infrastructure.Repositories
         public async Task Add(T Record)
         {
             await _context.Set<T>().AddAsync(Record);
-            _context.SaveChanges();
    
         }
 
         public async Task Delete(T record)
         {
             _context.Set<T>().Remove(record);
-            _context.SaveChanges();
         }
-         
-        
 
-        public async Task<IList<T>> GetAll()
+     
+
+        public async Task<IList<T>> GetAllAsync()
           =>  await _context.Set<T>().ToListAsync();
         
 
@@ -37,7 +39,30 @@ namespace  Infrastructure.Repositories
         public async Task Update(T Record)
         {
              _context.Set<T>().Update(Record);
-             _context.SaveChanges();
         }
+
+
+        //public async Task<T> Find(Expression<Func<T, bool>> criteria, string[] includes = null)
+        //{
+        //    IQueryable<T> query = _context.Set<T>();
+
+        //    if(includes != null)
+        //        foreach (var include in includes)
+        //            query = query.Include(include);
+
+        //    return await query.SingleOrDefaultAsync(criteria);
+
+        //}
+
+        public async Task<T> GetBySpecificationsAsync(ISpecification<T> specfication)
+       =>  await ApplySpecs(specfication).FirstOrDefaultAsync();
+
+        public async Task<IList<T>> GetListBySpecificationsAsync(ISpecification<T> specfication)
+      => await ApplySpecs(specfication).ToListAsync();
+
+
+        private IQueryable<T> ApplySpecs(ISpecification<T> specification)
+        => SpecificationEvaluator<T>.GetQuery(_context.Set<T>(), specification);
+        
     }
 }

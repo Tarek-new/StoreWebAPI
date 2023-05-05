@@ -21,7 +21,7 @@ namespace StoreWebAPI.Controllers
         /// <returns></returns>
         [HttpGet("GetBrands")]
         public async Task<IActionResult> GetBrandsAsync()
-            => Ok(await _brandsRepository.GetAll());
+            => Ok(await _brandsRepository.GetAllAsync());
 
         /// <summary>
         /// Get Brand by ID
@@ -57,7 +57,7 @@ namespace StoreWebAPI.Controllers
         }
 
         [HttpPut("UpdateBrand")]
-        public async Task<IActionResult> UpdateAsync([FromBody]BrandDto dto)
+        public async Task<IActionResult> UpdateAsync([FromBody] BrandDto dto)
         {
             var existingBrand = await _brandsRepository.GetById(dto.Id);
             if (existingBrand == null)
@@ -77,7 +77,7 @@ namespace StoreWebAPI.Controllers
             var brand = await _brandsRepository.GetById(id);
             if (brand == null)
                 return NotFound($"No brand was found with ID :{id}");
-            
+
             await _brandsRepository.Delete(brand);
             return Ok($"Brand with ID {brand.Id}, Name \"{brand.Name}\" has been deleted ");
         }
