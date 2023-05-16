@@ -1,10 +1,4 @@
 ﻿using Core.Enitities;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Core.Specifications
 {
@@ -12,12 +6,14 @@ namespace Core.Specifications
     {
         public ProductWithBrandAndTypeSpecification(ProductSpecParams productSpecParams)
             : base(product =>
+                  (String.IsNullOrEmpty(productSpecParams.Search) || product.Name.ToLower().Contains(productSpecParams.Search)) &&
                   (!productSpecParams.BrandId.HasValue || product.ProductBrandId == productSpecParams.BrandId) &&
                   (!productSpecParams.TypeId.HasValue || product.ProductTypeId == productSpecParams.TypeId)
                   )
         {
             AddInclude(product => product.ProductBrand);
             AddInclude(product => product.ProductType);
+            Paging(productSpecParams.PageSize * (productSpecParams.PageIndex - 1), productSpecParams.PageSize);
 
             if (!string.IsNullOrEmpty(productSpecParams.Sort))
             {

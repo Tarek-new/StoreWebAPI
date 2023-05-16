@@ -1,14 +1,12 @@
-using Core.Interfaces;
-using Core.Enitities;
+using Core.Enitities.Identity;
 using Infrastructure.Contexts;
-using Infrastructure.Repositories;
+using Infrastructure.Data;
 using Infrastructure.Seeds;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.AspNetCore.Http;
-using Microsoft.OpenApi.Models;
-using Microsoft.Extensions.Options;
-using System.Reflection;
-using StoreWebAPI.Helpers;
+using StackExchange.Redis;
+using StoreWebAPI.Extensions;
+using StoreWebAPI.Middlewares;
 
 namespace StoreWebAPI
 
@@ -23,30 +21,29 @@ namespace StoreWebAPI
 
             builder.Services.AddControllers();
             // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
-            builder.Services.AddEndpointsApiExplorer();
-            builder.Services.AddSwaggerGen(options =>
-            {
-                options.SwaggerDoc("v1", new OpenApiInfo { Title = "Store API", Version = "v1" });
-
-                // using System.Reflection;
-                var xmlFilename = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                options.IncludeXmlComments(Path.Combine(AppContext.BaseDirectory, xmlFilename));
-            });
+            builder.Services.AddSwaggerService();
 
             builder.Services.AddDbContext<StoreDbContext>(options =>
             {
                 options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
             });
-            builder.Services.AddScoped(typeof(IGenericRepository<>), typeof(GenericRepository<>));
-            builder.Services.AddScoped<IProductRepository, ProductRepository>();
-            builder.Services.AddScoped<IProductBrandsRepository, ProductBrandsRepository>();
-            builder.Services.AddScoped<IProductTypesRepository, ProductTypesRepository>();
-            builder.Services.AddAutoMapper(typeof(MappingProfiles));
+            builder.Services.AddDbContext<AppIdentityDbContext>(options =>
+            {
+                options.UseSqlServer(builder.Configuration.GetConnectionString("IdentityConnection"));
+            });
+            builder.Services.AddSingleton<IConnectionMultiplexer>(Config =>
+            {
+                var configuration = ConfigurationOptions
+                .Parse(builder.Configuration.GetConnectionString("Redis"), true);
+                return ConnectionMultiplexer.Connect(configuration);
+            });
 
+            builder.Services.ApplicationServices();
+            builder.Services.AddIdentityService(builder.Configuration);
 
             var app = builder.Build();
 
-            using (var scope=app.Services.CreateScope())
+            using (var scope = app.Services.CreateScope())
             {
                 var service = scope.ServiceProvider;
                 var loggerFactory = service.GetRequiredService<ILoggerFactory>();
@@ -55,6 +52,13 @@ namespace StoreWebAPI
                     var context = service.GetRequiredService<StoreDbContext>();
                     await context.Database.MigrateAsync();
                     await DbContextSeed.SeedDataAsync(context, loggerFactory);
+
+                    var userManager = service.GetRequiredService<UserManager<AppUser>>();
+                    var IdentityBdContext = service.GetRequiredService<AppIdentityDbContext>();
+                    await IdentityBdContext.Database.MigrateAsync();
+                    await AppIdentityDbContextSeed.SeedUserAsync(userManager);
+
+
                 }
                 catch (Exception ex)
                 {
@@ -72,9 +76,10 @@ namespace StoreWebAPI
             }
 
             app.UseHttpsRedirection();
+            app.UseMiddleware(typeof(ExceptionMiddleWare));
             app.UseStaticFiles();
+            app.UseAuthentication();
             app.UseAuthorization();
-
 
             app.MapControllers();
 
