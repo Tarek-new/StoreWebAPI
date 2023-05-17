@@ -19,6 +19,7 @@ namespace StoreWebAPI.Extensions
             services.AddScoped<IProductBrandsRepository, ProductBrandsRepository>();
             services.AddScoped<IProductTypesRepository, ProductTypesRepository>();
             services.AddScoped<IBasketRepository, BasketRepository>();
+            services.AddScoped<IOrderService, OrderService>();
             services.AddAutoMapper(typeof(MappingProfiles));
 
 

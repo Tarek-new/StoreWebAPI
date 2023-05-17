@@ -1,12 +1,9 @@
-﻿
-
-using System.Text.Json.Serialization;
-
-namespace Core.Enitities
+﻿namespace Core.Enitities
 {
-    public class Product:BaseEntity
+    public class Product : BaseEntity
     {
-        public int  Id { get; set; }
+
+        public int Id { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
         public string PictureUrl { get; set; }
@@ -14,8 +11,8 @@ namespace Core.Enitities
         public virtual ProductBrand ProductBrand { get; set; }
         public int ProductTypeId { get; set; }
         public virtual ProductType ProductType { get; set; }
-   
-        
+
+
     }
-    
+
 }

@@ -1,4 +1,5 @@
 ﻿using Core.Enitities;
+using Core.Enitities.OrderAggregate;
 using Infrastructure.Contexts;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -45,8 +46,20 @@ namespace Infrastructure.Seeds
                     var products = JsonSerializer.Deserialize<List<Product>>(productsData);
 
                     foreach (var product in products)
-                    
-                         context.Products.Add(product);
+
+                        context.Products.Add(product);
+                    await context.SaveChangesAsync();
+                }
+
+
+                if (context.DeliveryMethods != null && !context.DeliveryMethods.Any())
+                {
+                    var deliveryMethodsData = File.ReadAllText("../Infrastructure/Data/Seeds/delivery.json");
+                    var deliveryMethods = JsonSerializer.Deserialize<List<DeliveryMethod>>(deliveryMethodsData);
+
+                    foreach (var method in deliveryMethods)
+
+                        context.DeliveryMethods.Add(method);
                     await context.SaveChangesAsync();
                 }
 
